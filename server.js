@@ -7,6 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Allow for serving files from the public directory
+const path = require('path');
+// serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 const uri = "mongodb://localhost:27017/artGallery"; 
 
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -43,3 +48,5 @@ app.get('/api/paintings/:id', async (req, res) => {
         res.status(500).json({ message: "Error fetching painting", error });
     }
 });
+
+// PUT /api/paintings/:id: Update a painting by ID
