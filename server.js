@@ -22,6 +22,7 @@ app.listen(PORT, () => {
 const Painting = require('./models/Painting');
 
 // Implement API Endpoints
+
 // GET /api/paintings: Retrieve all the paintings
 app.get('/api/paintings', async (req, res) => {
     try {
@@ -29,5 +30,16 @@ app.get('/api/paintings', async (req, res) => {
         res.json(paintings);
     } catch (error) {
         res.status(500).json({ message: "Error fetching paintings", error });
+    }
+});
+
+// GET /api/paintings/:id: Retrieve a painting by ID
+app.get('/api/paintings/:id', async (req, res) => {
+    try {
+        const painting = await Painting.findById(req.params.id);
+        if (!painting) return res.status(404).json({ message: "Painting not found" });
+        res.json(painting);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching painting", error });
     }
 });

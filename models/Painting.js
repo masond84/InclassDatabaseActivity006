@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const paintingSchema = new mongoose.Schema({
+    PaintingID: Number,
     ArtistID: Number,
     FirstName: String,
     LastName: String,
@@ -19,6 +20,14 @@ const paintingSchema = new mongoose.Schema({
     Medium: String,
     Cost: Number,
     MSRP: Number,
+    ShapeID: Number,                    
+    MuseumLink: String,
+    AccessionNumber: String,
+    CopyrightText: String,
+    Excerpt: String,
+    WikiLink: String,
+    JsonAnnotations: Object,            
+    ShapeName: String
 });
 
 module.exports = mongoose.model('Painting', paintingSchema);
