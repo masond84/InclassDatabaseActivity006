@@ -42,6 +42,8 @@ function loadPainting(painting) {
         const formData = new FormData(form);
         const updatedData = Object.fromEntries(formData.entries());
 
+        console.log(`Updating painting with ID: ${painting._id}`);
+
         await fetch(`/api/paintings/${painting._id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

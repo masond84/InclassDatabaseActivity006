@@ -50,11 +50,13 @@ app.get('/api/paintings/:id', async (req, res) => {
 });
 
 // PUT /api/paintings/:id: Update a painting by ID
-app.post('/api/paintings', async (req, res) => {
+app.put('/api/paintings/:id', async (req, res) => {
     try {
-        const newPainting = new Painting(req.body);
-        const savedPainting = await newPainting.save();
-        res.status(201).json(savedPainting);
+        const updatedPainting = await Painting.findByIdAndUpdate(req.params.id, req.body, {new:true});
+        if (!updatedPainting) {
+            return res.status(404).json({message: "Painting not found"});
+        }
+        res.json(updatedPainting);
     } catch (error) {
         res.status(500).json({message: "Error Creating Painting:", error});
     }
