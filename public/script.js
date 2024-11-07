@@ -26,17 +26,22 @@ function displayPaintings(paintings) {
 
 // Load paintings data into the form
 function loadPainting(painting) {
+    // Grab the form element from the HTML file
     const form = document.getElementById('edit-form');
-    form.Title.value = painting.Title;
-    form.lastName.value = painting.LastName;
-    form.YearOfWork.value = painting.YearOfWork;
-    form.Medium.value = painting.Medium;
-    form.Description.value = painting.Description;
 
+    // Populate the form fields with the data from paintings
+    form.elements['Title'].value = painting.Title || 'null';  // Match the "name" attribute in HTML
+    form.elements['LastName'].value = painting.LastName || 'null';  // Artist's Last Name
+    form.elements['YearOfWork'].value = painting.YearOfWork || 'null';
+    form.elements['Medium'].value = painting.Medium || 'null';
+    form.elements['Description'].value = painting.Description || 'null';
+
+    // Set up the form submission to update the painting
     form.onsubmit = async function(event) {
         event.preventDefault();
         const formData = new FormData(form);
         const updatedData = Object.fromEntries(formData.entries());
+
         await fetch(`/api/paintings/${painting._id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -49,4 +54,5 @@ function loadPainting(painting) {
     document.getElementById('painting-form').style.display = 'block';
 
 }
+
 fetchPaintings();
