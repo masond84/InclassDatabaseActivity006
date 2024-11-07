@@ -50,3 +50,12 @@ app.get('/api/paintings/:id', async (req, res) => {
 });
 
 // PUT /api/paintings/:id: Update a painting by ID
+app.post('/api/paintings', async (req, res) => {
+    try {
+        const newPainting = new Painting(req.body);
+        const savedPainting = await newPainting.save();
+        res.status(201).json(savedPainting);
+    } catch (error) {
+        res.status(500).json({message: "Error Creating Painting:", error});
+    }
+});
