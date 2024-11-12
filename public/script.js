@@ -4,18 +4,8 @@ async function fetchPaintings() {
     try {
         const response = await fetch('/api/paintings');
         const paintings = await response.json();
-        displayPaintings(paintings);    
-    } catch (error) {
-        console.error('Error fetching paintings:', error);
-    }
-}
-
-// Fetch and display paintings in the sidebar
-async function fetchPaintings() {
-    try {
-        const response = await fetch('/api/paintings');
-        const paintings = await response.json();
         displayPaintings(paintings);
+        setupSearchSortAndFilter(paintings);  // Initialize search, sort, and filter
     } catch (error) {
         console.error('Error fetching paintings:', error);
     }
@@ -27,32 +17,31 @@ function displayPaintings(paintings) {
     paintingList.innerHTML = '';
 
     paintings.forEach(painting => {
-        // Create a container for each painting
+        // Create a container for each painting, functioning as an "Edit" button
         const container = document.createElement('div');
-        container.classList.add("mb-4", "p-4", "bg-gray-100", "rounded-lg", "shadow", "flex", "flex-col", "items-center");
+        container.classList.add("mb-4", "p-4", "bg-gray-100", "rounded-lg", "shadow", "flex", "justify-between", "items-center", "cursor-pointer", "hover:bg-gray-200");
+        container.onclick = () => loadPainting(painting);  // Set up click event to load painting data
 
-        // Generate a image URL using Lorem Picsum API
-        const imageUrl = `https://picsum.photos/seed/${painting.PaintingID}/100/100`;
-
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        img.alt = painting.Title || 'Untitled';
-        img.classList.add("w-20", "h-20", "mb-2", "object-cover", "rounded");
-
-        // Title element
+        // Title element aligned to the left
         const title = document.createElement('p');
         title.innerText = painting.Title || 'Untitled';
-        title.classList.add("text-sm", "font-semibold", "text-center", "mb-2");
+        title.classList.add("text-sm", "font-semibold", "text-gray-700");
 
-        // Edit button
-        const button = document.createElement('button');
-        button.innerText = "Edit";
-        button.classList.add("px-3", "py-1", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600", "focus:outline-none", "focus:ring", "focus:ring-blue-300");
-        button.onclick = () => loadPainting(painting);
+        // Image element aligned to the right
+        const img = document.createElement('img');
+        img.src = `/images/${painting.ImageFileName}`;  // Use the image filename from the painting data
+        img.alt = painting.Title || 'Untitled Painting';
+        img.classList.add("w-20", "h-20", "object-cover", "rounded");
 
-        container.appendChild(img);
+        // Add onerror event to handle missing images and use banksy.jpg as fallback
+        img.onerror = () => {
+            img.src = '/images/banksy.jpg';  // Set to dummy image if original image fails to load
+            img.alt = 'Placeholder image';
+        };
+
+        // Append title and image to the container
         container.appendChild(title);
-        container.appendChild(button);
+        container.appendChild(img);
 
         // Append the container to the painting list
         paintingList.appendChild(container);
@@ -85,11 +74,66 @@ function loadPainting(painting) {
             body: JSON.stringify(updatedData)
         });
         alert('Painting updated successfully');
-        fetchPaintings(); 
+        fetchPaintings();
     };
 
     document.getElementById('painting-form').style.display = 'block';
+}
 
+// Setup sidebar search, sort, and filter functions
+function setupSearchSortAndFilter(paintings) {
+    const searchBar = document.getElementById('search-bar');
+    const sortOptions = document.getElementById('sort-options');
+    const lastNameFilter = document.getElementById('last-name-filter');
+
+    function updateLastNameFilter(filteredPaintings) {
+        // Clear and repopulate the last name filter dropdown
+        lastNameFilter.innerHTML = '<option value="">Filter by artist</option>';
+        const uniqueLastNames = Array.from(new Set(filteredPaintings.map(p => p.LastName).filter(Boolean)));
+        uniqueLastNames.sort().forEach(lastName => {
+            const option = document.createElement('option');
+            option.value = lastName;
+            option.textContent = lastName;
+            lastNameFilter.appendChild(option);
+        });
+    }
+
+    function applyFilters() {
+        const query = searchBar.value.toLowerCase();
+        const selectedLastName = lastNameFilter.value;
+
+        // Filter paintings by title and selected last name
+        let filteredPaintings = paintings.filter(painting =>
+            (painting.Title && painting.Title.toLowerCase().includes(query)) &&
+            (selectedLastName === "" || painting.LastName === selectedLastName)
+        );
+
+        // Update the last name filter dropdown based on current search results
+        updateLastNameFilter(filteredPaintings);
+
+        // Apply sorting
+        const sortBy = sortOptions.value;
+        filteredPaintings = filteredPaintings.sort((a, b) => {
+            if (sortBy === 'title-asc') return a.Title.localeCompare(b.Title);
+            if (sortBy === 'title-desc') return b.Title.localeCompare(a.Title);
+            if (sortBy === 'year-asc') return (a.YearOfWork || 0) - (b.YearOfWork || 0);
+            if (sortBy === 'year-desc') return (b.YearOfWork || 0) - (a.YearOfWork || 0);
+        });
+
+        displayPaintings(filteredPaintings);
+    }
+
+    // Set up search input listener
+    searchBar.addEventListener('input', applyFilters);
+
+    // Set up sort dropdown change listener
+    sortOptions.addEventListener('change', applyFilters);
+
+    // Set up last name filter change listener
+    lastNameFilter.addEventListener('change', applyFilters);
+
+    // Initially update the last name filter with all paintings
+    updateLastNameFilter(paintings);
 }
 
 fetchPaintings();
