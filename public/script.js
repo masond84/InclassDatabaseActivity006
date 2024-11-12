@@ -10,17 +10,52 @@ async function fetchPaintings() {
     }
 }
 
+// Fetch and display paintings in the sidebar
+async function fetchPaintings() {
+    try {
+        const response = await fetch('/api/paintings');
+        const paintings = await response.json();
+        displayPaintings(paintings);
+    } catch (error) {
+        console.error('Error fetching paintings:', error);
+    }
+}
+
 // Display paintings in the sidebar
 function displayPaintings(paintings) {
     const paintingList = document.getElementById('paintings-list');
     paintingList.innerHTML = '';
 
     paintings.forEach(painting => {
+        // Create a container for each painting
+        const container = document.createElement('div');
+        container.classList.add("mb-4", "p-4", "bg-gray-100", "rounded-lg", "shadow", "flex", "flex-col", "items-center");
+
+        // Generate a image URL using Lorem Picsum API
+        const imageUrl = `https://picsum.photos/seed/${painting.PaintingID}/100/100`;
+
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = painting.Title || 'Untitled';
+        img.classList.add("w-20", "h-20", "mb-2", "object-cover", "rounded");
+
+        // Title element
+        const title = document.createElement('p');
+        title.innerText = painting.Title || 'Untitled';
+        title.classList.add("text-sm", "font-semibold", "text-center", "mb-2");
+
+        // Edit button
         const button = document.createElement('button');
-        button.classList.add("block", "w-full", "text-left", "py-2", "px-4", "mb-2", "bg-gray-100", "rounded", "hover:bg-gray-200");
-        button.innerText = painting.Title || 'Untitled';
+        button.innerText = "Edit";
+        button.classList.add("px-3", "py-1", "bg-blue-500", "text-white", "rounded", "hover:bg-blue-600", "focus:outline-none", "focus:ring", "focus:ring-blue-300");
         button.onclick = () => loadPainting(painting);
-        paintingList.appendChild(button);
+
+        container.appendChild(img);
+        container.appendChild(title);
+        container.appendChild(button);
+
+        // Append the container to the painting list
+        paintingList.appendChild(container);
     });
 }
 
